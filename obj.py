@@ -17,6 +17,7 @@ class Obj(object):
 
         self.vertices = []
         self.tvertices = []
+        self.normals = []
         self.faces = []
         self.read()
 
@@ -31,6 +32,8 @@ class Obj(object):
                     self.vertices.append(list(map(float, value.split(' '))))
                 elif prefix == 'vt':
                     self.tvertices.append(list(map(float, value.strip().split(' '))))
+                elif prefix == 'vn': #normales
+                    self.normals.append(list(map(float,value.split(' '))))
                 elif prefix == 'f':
                     self.faces.append([list(map(int , face.split('/'))) for face in value.split(' ')])
 
@@ -52,7 +55,7 @@ class Texture(object):
         self.pixels = numpy.frombuffer(all_bytes, dtype='uint8')
         img.close()
 
-    def get_color(self, tx, ty, intensity):
+    def get_color(self, tx, ty, intensity=1):
         x = int(tx * self.width)
         y = int(ty * self.height)
         index = (y * self.width + x) * 3

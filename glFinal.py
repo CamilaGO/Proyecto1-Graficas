@@ -18,7 +18,7 @@ class Render(object):
     self.glClear()
     self.light = V3(0,0,1)
     self.active_texture = None
-    #self.active_shader  = None
+    self.active_shader  = None
     self.active_vertex_array = []
     #array del tamaño del buffer lleno de -infinitos
 
@@ -124,9 +124,9 @@ class Render(object):
       tB = next(self.active_vertex_array)
       tC = next(self.active_vertex_array)
 
-      #nA = next(self.active_vertex_array)
-      #nB = next(self.active_vertex_array)
-      #nC = next(self.active_vertex_array)
+      nA = next(self.active_vertex_array)
+      nB = next(self.active_vertex_array)
+      nC = next(self.active_vertex_array)
 
     xmax, ymax, xmin, ymin = bbox(A, B, C)
 
@@ -148,14 +148,14 @@ class Render(object):
           tx = tA.x * w + tB.x * u + tC.x * v
           ty = tA.y * w + tB.y * u + tC.y * v
 
-          self.current_color = self.active_texture.get_color(tx, ty, intensity)
-        """self.current_color = self.active_shader(
+          #self.current_color = self.active_texture.get_color(tx, ty, intensity)
+        self.current_color = self.active_shader(
           self,
           triangle=(A, B, C),
           bar=(w, v, u),
           texture_coords=(tx, ty),
           varying_normals=(nA, nB, nC)
-        )"""
+        )
         
         z = A.z * w + B.z * u + C.z * v
         if x < 0 or y < 0:
@@ -204,9 +204,9 @@ class Render(object):
           #tvertex = V2(*model.tvertices[facepart[1]-1])
           vertex_buffer_object.append(tvertex)
 
-        """for facepart in face:
+        for facepart in face:
           nvertex = V3(*model.normals[facepart[2]-1])
-          vertex_buffer_object.append(nvertex)"""
+          vertex_buffer_object.append(nvertex)
 
     self.active_vertex_array = iter(vertex_buffer_object)
 
