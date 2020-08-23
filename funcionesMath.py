@@ -93,14 +93,17 @@ def barycentric(A, B, C, P):
 
   return w, v, u
 
-"""def allbarycentric(A, B, C, bbox_min, bbox_max):
-  barytransform = numpy.linalg.inv([[A.x, B.x, C.x], [A.y,B.y,C.y], [1, 1, 1]])
-  grid = numpy.mgrid[bbox_min.x:bbox_max.x, bbox_min.y:bbox_max.y].reshape(2,-1)
-  grid = numpy.vstack((grid, numpy.ones((1, grid.shape[1]))))
-  barycoords = numpy.dot(barytransform, grid)
-  # barycoords = barycoords[:,numpy.all(barycoords>=0, axis=0)]
-  barycoords = numpy.transpose(barycoords)
-  return barycoords"""
+def MultMatriz(a,b):
+  c = []
+  for i in range(0,len(a)):
+    temp=[]
+    for j in range(0,len(b[0])):
+      s = 0
+      for k in range(0,len(a[0])):
+        s += a[i][k]*b[k][j]
+      temp.append(s)
+    c.append(temp)
+  return c
 
 def char(c):
   return struct.pack('=c', c.encode('ascii'))

@@ -1,91 +1,6 @@
-import random
-import numpy
-from numpy import matrix, cos, sin, tan
 from obj import Obj, Texture
-from collections import namedtuple
-import struct 
-
-## UTILS
-# implementacion de "vectores" para manejar menos variables en funciones y tener mejor orden de coordenadas
-V2 = namedtuple('Point2', ['x', 'y'])
-V3 = namedtuple('Point3', ['x', 'y', 'z'])
-
-def sum(v0, v1):
-  # suma dos vectores de 3 elementos 
-  return V3(v0.x + v1.x, v0.y + v1.y, v0.z + v1.z)
-
-def sub(v0, v1):
-  # resta dos vectores de 3 elementos
-  return V3(v0.x - v1.x, v0.y - v1.y, v0.z - v1.z)
-
-def mul(v0, k):
-  # multiplica un vector de 3 elementos por una constante
-  return V3(v0.x * k, v0.y * k, v0.z *k)
-
-def dot(v0, v1):
-  # reliza el producto punto de dos vectores de 3 elementos 
-  # el resultado es un escalar
-  return v0.x * v1.x + v0.y * v1.y + v0.z * v1.z
-
-def cross(v1, v2):
-  return V3(
-    v1.y * v2.z - v1.z * v2.y,
-    v1.z * v2.x - v1.x * v2.z,
-    v1.x * v2.y - v1.y * v2.x,
-  )
-
-def length(v0):
-  # devuelve el tamaño (escalar) del vector
-  return (v0.x**2 + v0.y**2 + v0.z**2)**0.5
-
-def norm(v0):
-  #calcula la normal de un vector de 3 elementos
-  v0length = length(v0)
-
-  if not v0length:
-    return V3(0, 0, 0)
-
-  return V3(v0.x/v0length, v0.y/v0length, v0.z/v0length)
-
-def bbox(*vertices):
-  # Se reciben *n vectores de 2 elementos para encontrar los x,y maximos y minimos
-  # para poder hacer la boundingbox, es decir cubrir el poligono
-  xs = [ vertex.x for vertex in vertices ]
-  ys = [ vertex.y for vertex in vertices ]
-
-  return (max(xs), max(ys), min(xs), min(ys))
-
-def barycentric(A, B, C, P):
-  # Este algoritmo de numeros baricentricos sirve para llena un poligono
-  # Parametros: 3 vectores de 2 elementos y un punto
-  # Return: 3 coordinadas baricentricas del punto segun el triangulo formado a partir de los vectores
-  cx, cy, cz = cross(
-    V3(B.x - A.x, C.x - A.x, A.x - P.x), 
-    V3(B.y - A.y, C.y - A.y, A.y - P.y)
-  )
-
-  if abs(cz) < 1:
-    return -1, -1, -1   # no es un triangulo de verdad, no devuelve nada afuera
-
-  # [cx cy cz] == [u v 1]
-
-  u = cx/cz
-  v = cy/cz
-  w = 1 - (cx + cy)/cz
-
-  return w, v, u
-
-def char(c):
-  return struct.pack('=c', c.encode('ascii'))
-
-def word(w):
-  return struct.pack('=h', w)
-
-def dword(d):
-  return struct.pack('=l', d)
-
-def color(r, g, b):
-  return bytes([b, g, r])
+from funcionesMath import *
+import math 
 
 # ===============================================================
 # Render BMP file
@@ -103,6 +18,7 @@ class Render(object):
     self.glClear()
     self.light = V3(0,0,1)
     self.active_texture = None
+    #self.active_shader  = None
     self.active_vertex_array = []
     #array del tamaño del buffer lleno de -infinitos
 
@@ -208,9 +124,9 @@ class Render(object):
       tB = next(self.active_vertex_array)
       tC = next(self.active_vertex_array)
 
-    nA = next(self.active_vertex_array)
-    nB = next(self.active_vertex_array)
-    nC = next(self.active_vertex_array)
+      #nA = next(self.active_vertex_array)
+      #nB = next(self.active_vertex_array)
+      #nC = next(self.active_vertex_array)
 
     xmax, ymax, xmin, ymin = bbox(A, B, C)
 
@@ -229,40 +145,45 @@ class Render(object):
           #se calcula la profunidad en z de cada punto
 
         if self.active_texture:
-          tx = tA.x * w + tB.x * v + tC.x * u
-          ty = tA.y * w + tB.y * v + tC.y * u
+          tx = tA.x * w + tB.x * u + tC.x * v
+          ty = tA.y * w + tB.y * u + tC.y * v
 
           self.current_color = self.active_texture.get_color(tx, ty, intensity)
+        """self.current_color = self.active_shader(
+          self,
+          triangle=(A, B, C),
+          bar=(w, v, u),
+          texture_coords=(tx, ty),
+          varying_normals=(nA, nB, nC)
+        )"""
         
-        z = A.z * w + B.z * v + C.z * u
+        z = A.z * w + B.z * u + C.z * v
         if x < 0 or y < 0:
           continue
 
         if x < len(self.zbuffer) and y < len(self.zbuffer[x]) and z > self.zbuffer[x][y]:
           self.point(x, y)
           self.zbuffer[x][y] = z
-        """try:
-          if z > self.zbuffer[x][y]:
-            self.point(x,y)
-            self.zbuffer[x][y] = z
-        except:
-          pass"""
     
   def transform(self, vertex):
+    #vertex es un V3
     augmented_vertex = [
-      vertex.x,
-      vertex.y,
-      vertex.z,
-      1
+      [vertex.x],
+      [vertex.y],
+      [vertex.z],
+      [1]
     ]
-    tranformed_vertex = self.Viewport @ self.Projection @ self.View @ self.Model @ augmented_vertex
+    # se calcula la matriz 4x4 al multiplicarla por las demas
+    tranformed_vertex = MultMatriz(self.Viewport, self.Projection) 
+    tranformed_vertex = MultMatriz(tranformed_vertex, self.View) 
+    tranformed_vertex = MultMatriz(tranformed_vertex, self.Model) 
+    tranformed_vertex = MultMatriz(tranformed_vertex, augmented_vertex)
 
-    tranformed_vertex = tranformed_vertex.tolist()[0]
-
+    #se obtiene solo los primeros valores de cada fila para simular un vecto x,y,z
     tranformed_vertex = [
-      (tranformed_vertex[0]/tranformed_vertex[3]),
-      (tranformed_vertex[1]/tranformed_vertex[3]),
-      (tranformed_vertex[2]/tranformed_vertex[3])
+      (tranformed_vertex[0][0]),
+      (tranformed_vertex[1][0]),
+      (tranformed_vertex[2][0])
     ]
     print(V3(*tranformed_vertex))
     return V3(*tranformed_vertex)
@@ -280,7 +201,12 @@ class Render(object):
       if self.active_texture:
         for facepart in face:
           tvertex = V3(*model.tvertices[facepart[1]-1])
+          #tvertex = V2(*model.tvertices[facepart[1]-1])
           vertex_buffer_object.append(tvertex)
+
+        """for facepart in face:
+          nvertex = V3(*model.normals[facepart[2]-1])
+          vertex_buffer_object.append(nvertex)"""
 
     self.active_vertex_array = iter(vertex_buffer_object)
 
@@ -289,81 +215,83 @@ class Render(object):
     scale = V3(*scale)
     rotate = V3(*rotate)
 
-    translation_matrix = matrix([
+    translation_matrix = [
       [1, 0, 0, translate.x],
       [0, 1, 0, translate.y],
       [0, 0, 1, translate.z],
       [0, 0, 0, 1],
-    ])
+    ]
 
 
     a = rotate.x
-    rotation_matrix_x = matrix([
+    rotation_matrix_x = [
       [1, 0, 0, 0],
-      [0, cos(a), -sin(a), 0],
-      [0, sin(a),  cos(a), 0],
+      [0, math.cos(a), -math.sin(a), 0],
+      [0, math.sin(a),  math.cos(a), 0],
       [0, 0, 0, 1]
-    ])
+    ]
 
     a = rotate.y
-    rotation_matrix_y = matrix([
-      [cos(a), 0,  sin(a), 0],
+    rotation_matrix_y = [
+      [math.cos(a), 0,  math.sin(a), 0],
       [     0, 1,       0, 0],
-      [-sin(a), 0,  cos(a), 0],
+      [-math.sin(a), 0,  math.cos(a), 0],
       [     0, 0,       0, 1]
-    ])
+    ]
 
     a = rotate.z
-    rotation_matrix_z = matrix([
-      [cos(a), -sin(a), 0, 0],
-      [sin(a),  cos(a), 0, 0],
+    rotation_matrix_z = [
+      [math.cos(a), -math.sin(a), 0, 0],
+      [math.sin(a),  math.cos(a), 0, 0],
       [0, 0, 1, 0],
       [0, 0, 0, 1]
-    ])
+    ]
 
-    rotation_matrix = rotation_matrix_x @ rotation_matrix_y @ rotation_matrix_z
+    rotation_matrix = MultMatriz(rotation_matrix_x, rotation_matrix_y)
+    rotation_matrix = MultMatriz(rotation_matrix, rotation_matrix_z)
 
-    scale_matrix = matrix([
+    scale_matrix = [
       [scale.x, 0, 0, 0],
       [0, scale.y, 0, 0],
       [0, 0, scale.z, 0],
       [0, 0, 0, 1],
-    ])
+    ]
 
-    self.Model = translation_matrix @ rotation_matrix @ scale_matrix
+    MultMatrizodelo = MultMatriz(translation_matrix, rotation_matrix) 
+    self.Model = MultMatriz(MultMatrizodelo, scale_matrix)
 
   def loadViewMatrix(self, x, y, z, center):
-    M = matrix([
+    M = [
       [x.x, x.y, x.z,  0],
       [y.x, y.y, y.z, 0],
       [z.x, z.y, z.z, 0],
       [0,     0,   0, 1]
-    ])
+    ]
 
-    O = matrix([
+    O = [
       [1, 0, 0, -center.x],
       [0, 1, 0, -center.y],
       [0, 0, 1, -center.z],
       [0, 0, 0, 1]
-    ])
+    ]
 
-    self.View = M @ O
+    self.View = MultMatriz(M, O)
 
   def loadProjectionMatrix(self, coeff):
-    self.Projection =  matrix([
+    self.Projection =  [
       [1, 0, 0, 0],
       [0, 1, 0, 0],
       [0, 0, 1, 0],
       [0, 0, coeff, 1]
-    ])
+    ]
 
   def loadViewportMatrix(self, x = 0, y = 0):
-    self.Viewport =  matrix([
+    self.Viewport =  [
       [self.width/2, 0, 0, x + self.width/2],
       [0, self.height/2, 0, y + self.height/2],
       [0, 0, 128, 128],
       [0, 0, 0, 1]
-    ])
+    ]
 
   def lookAt(self, eye, center, up):
     z = norm(sub(eye, center))
