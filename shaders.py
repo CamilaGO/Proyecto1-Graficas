@@ -89,7 +89,7 @@ r.active_shader = gourad
 r.lookAt(V3(1, 0, 100), V3(0, 0, 0), V3(0, 1, 0))
 #r.load('./sphere.obj', translate=(0, 0, 0), scale=(1, 1, 1), rotate=(0, 0, 1))
 #r.draw_arrays('TRIANGLES')
-r.finish('out3.bmp')
+r.finish('out4.bmp')
 
 #item 1
 #arbol
@@ -114,10 +114,10 @@ r.finish('out3.bmp')
 
 #item 3
 #fox
-'''t = Texture('./texts/ft.bmp')
+t = Texture('./texts/ft.bmp')
 r.active_texture = t
-r.active_shader = gourad
+#r.active_shader = gourad
 r.lookAt(V3(1, 0, 5), V3(0, 0, 0), V3(0, 1, 0))
-r.load1('./models/fox.obj', translate=(-0.4, -0.9, 0), scale=(0.007,0.007,0.007), rotate=(0, 0, 0))
+r.load1('./models/fox.obj', translate=(-0.1, -0.9, 0), scale=(0.005,0.005,0.005), rotate=(0, 0, 0))
 r.draw_arrays('TRIANGLES')
-r.finish('mi_fox.bmp')'''
+r.finish('out4.bmp')
