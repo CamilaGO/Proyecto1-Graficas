@@ -24,7 +24,7 @@ class Render(object):
 
   def glClear(self):
     self.buffer = [
-      [BLACK for x in range(self.width)] 
+      [WHITE for x in range(self.width)] 
       for y in range(self.height)
     ]
     self.zbuffer = [
@@ -118,15 +118,18 @@ class Render(object):
     A = next(self.active_vertex_array)
     B = next(self.active_vertex_array)
     C = next(self.active_vertex_array)
+    #print("ABC DE TRING", A,B,C)
 
     if self.active_texture:
       tA = next(self.active_vertex_array)
       tB = next(self.active_vertex_array)
       tC = next(self.active_vertex_array)
+      #print("tAtBtC DE TRING", tA,tB,tC)
 
       nA = next(self.active_vertex_array)
       nB = next(self.active_vertex_array)
       nC = next(self.active_vertex_array)
+      #print("nAnBnC DE TRING", nA,nB,nC)
 
     xmax, ymax, xmin, ymin = bbox(A, B, C)
 
@@ -149,21 +152,23 @@ class Render(object):
           ty = tA.y * w + tB.y * u + tC.y * v
 
           #self.current_color = self.active_texture.get_color(tx, ty, intensity)
-        self.current_color = self.active_shader(
-          self,
-          triangle=(A, B, C),
-          bar=(w, v, u),
-          texture_coords=(tx, ty),
-          varying_normals=(nA, nB, nC)
-        )
+          self.current_color = self.active_shader(
+            self,
+            triangle=(A, B, C),
+            bar=(w, v, u),
+            texture_coords=(tx, ty),
+            varying_normals=(nA, nB, nC)
+          )
+        else:
+          self.current_color = color(round(255 * intensity),0,0)
         
         z = A.z * w + B.z * u + C.z * v
         if x < 0 or y < 0:
           continue
 
-        if x < len(self.zbuffer) and y < len(self.zbuffer[x]) and z > self.zbuffer[x][y]:
+        if x < len(self.zbuffer) and y < len(self.zbuffer[x]) and z > self.zbuffer[y][x]:
           self.point(x, y)
-          self.zbuffer[x][y] = z
+          self.zbuffer[y][x] = z
     
   def transform(self, vertex):
     #vertex es un V3
@@ -195,18 +200,99 @@ class Render(object):
     
     for face in model.faces:
       for facepart in face:
+          print(model.vertices[facepart[0]-1])
           vertex = self.transform(V3(*model.vertices[facepart[0]-1]))
           vertex_buffer_object.append(vertex)
 
       if self.active_texture:
         for facepart in face:
-          tvertex = V3(*model.tvertices[facepart[1]-1])
-          #tvertex = V2(*model.tvertices[facepart[1]-1])
+          if len(model.tvertices[facepart[1]-1]) == 2:
+              tvertex = V2(*model.tvertices[facepart[1]-1])
+          elif len(model.tvertices[facepart[1]-1]) == 3:
+              tvertex = V3(*model.tvertices[facepart[1]-1])
           vertex_buffer_object.append(tvertex)
+          #tvertex = V3(*model.tvertices[facepart[1]-1])
+          #tvertex = V2(*model.tvertices[facepart[1]-1])
+          #vertex_buffer_object.append(tvertex)
 
-        for facepart in face:
-          nvertex = V3(*model.normals[facepart[2]-1])
-          vertex_buffer_object.append(nvertex)
+      for facepart in face:
+        #nvertex = V3(*model.normals[facepart[2]-1])
+        if len(model.normals[facepart[2]-1]) == 2:
+            nvertex = V2(*model.normals[facepart[2]-1])
+        elif len(model.normals[facepart[2]-1]) == 3:
+            nvertex = V3(*model.normals[facepart[2]-1])
+        #vertex_buffer_object.append(tvertex)
+        vertex_buffer_object.append(nvertex)
+
+    self.active_vertex_array = iter(vertex_buffer_object)
+
+  def load1(self, filename, translate=(0, 0, 0), scale=(1, 1, 1), rotate=(0, 0, 0)):
+    self.loadModelMatrix(translate, scale, rotate)
+    model = Obj(filename)
+    vertex_buffer_object = []
+    #vcount = len(model.faces) #conteo de vertex x poli
+
+    for face in model.faces:
+        vcount = len(face) #conteo de vertex x poli
+        if vcount == 3:
+            for facepart in face:
+                vertex = self.transform(V3(*model.vertices[facepart[0]-1]))
+                vertex_buffer_object.append(vertex)
+
+            if self.active_texture:
+                for facepart in face:
+                    tvertex = V2(*model.tvertices[facepart[1]-1])
+                    #tvertex = V3(*model.tvertices[facepart[1]-1])
+                    vertex_buffer_object.append(tvertex)
+
+                for facepart in face:
+                    nvertex = V3(*model.normals[facepart[2]-1])
+                    vertex_buffer_object.append(nvertex)
+                    
+
+        #self.active_vertex_array = iter(vertex_buffer_object)
+
+        elif vcount == 4:
+            #un cuadrado lo vidivmos en 2
+            #primer triangulo
+            for faceindex in [0,1,2]:
+                #print('entro')
+                facepart = face[faceindex]
+                #print(facepart)
+                vertex = self.transform(V3(*model.vertices[facepart[0]-1]))
+                print(vertex)
+                vertex_buffer_object.append(vertex)
+
+            if self.active_texture:
+                for faceindex in range(0,3):
+                    facepart = face[faceindex]
+                    tvertex = V2(*model.tvertices[facepart[1]-1])
+                    #tvertex = V3(*model.tvertices[facepart[1]-1])
+                    vertex_buffer_object.append(tvertex)
+
+                for faceindex in range(0,3):
+                    facepart = face[faceindex]
+                    nvertex = V3(*model.normals[facepart[2]-1])
+                    vertex_buffer_object.append(nvertex)
+
+            #segundo triangulo que forma el cuadrado
+            #continue
+            for faceindex in [3,0,2]:
+                facepart = face[faceindex]
+                vertex = self.transform(V3(*model.vertices[facepart[0]-1]))
+                vertex_buffer_object.append(vertex)
+
+            if self.active_texture:
+                for faceindex in [3,0,2]:
+                    facepart = face[faceindex]
+                    tvertex = V2(*model.tvertices[facepart[1]-1])
+                    #tvertex = V3(*model.tvertices[facepart[1]-1])
+                    vertex_buffer_object.append(tvertex)
+
+                for faceindex in [3,0,2]:
+                    facepart = face[faceindex]
+                    nvertex = V3(*model.normals[facepart[2]-1])
+                    vertex_buffer_object.append(nvertex)
 
     self.active_vertex_array = iter(vertex_buffer_object)
 
@@ -308,7 +394,6 @@ class Render(object):
           self.triangle()
       except StopIteration:
         print('Done.')
-
 
 
   

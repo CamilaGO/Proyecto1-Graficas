@@ -1,6 +1,7 @@
 import struct
 import numpy
 
+
 def color(r, g, b):
   return bytes([b, g, r])
 
@@ -10,13 +11,19 @@ def try_int_minus1(s, base=10, val=None):
   except ValueError:
     return val
 
+def try_int(s, base=10, val=None):
+    try:
+        return int(s, base)
+    except ValueError:
+        return val
+
 class Obj(object):
     def __init__(self, filename):
         with open(filename) as f:
             self.lines = f.read().splitlines()
 
         self.vertices = []
-        self.tvertices = []
+        self.tvertices = []      
         self.normals = []
         self.faces = []
         self.read()
@@ -35,7 +42,8 @@ class Obj(object):
                 elif prefix == 'vn': #normales
                     self.normals.append(list(map(float,value.split(' '))))
                 elif prefix == 'f':
-                    self.faces.append([list(map(int , face.split('/'))) for face in value.split(' ')])
+                    self.faces.append([list(map(try_int, face.split('/'))) for face in value.split(' ')])
+                    #self.faces.append([list(map(int , face.split('/'))) for face in value.split(' ')])
 
 import mmap
 
@@ -67,6 +75,7 @@ class Texture(object):
     def get_color(self, tx, ty, intensity=1):
         x = int(tx * self.width)
         y = int(ty * self.height)
+        print('mi X y Y', x, y)
         # return self.pixels[y][x]
         try:
             return bytes(map(lambda b: round(b*intensity) if b*intensity > 0 else 0, self.pixels[y][x]))
