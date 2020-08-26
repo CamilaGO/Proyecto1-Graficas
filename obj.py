@@ -44,7 +44,7 @@ class Obj(object):
                 elif prefix == 'f':
                     self.faces.append([list(map(try_int, face.split('/'))) for face in value.split(' ')])
                     #self.faces.append([list(map(int , face.split('/'))) for face in value.split(' ')])
-
+            print(line)            
 import mmap
 
 class Texture(object):

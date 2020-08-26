@@ -262,38 +262,39 @@ class Render(object):
                 vertex = self.transform(V3(*model.vertices[facepart[0]-1]))
                 print(vertex)
                 vertex_buffer_object.append(vertex)
+            try:
+              if self.active_texture:
+                  for faceindex in range(0,3):
+                      facepart = face[faceindex]
+                      tvertex = V2(*model.tvertices[facepart[1]-1])
+                      #tvertex = V3(*model.tvertices[facepart[1]-1])
+                      vertex_buffer_object.append(tvertex)
 
-            if self.active_texture:
-                for faceindex in range(0,3):
-                    facepart = face[faceindex]
-                    tvertex = V2(*model.tvertices[facepart[1]-1])
-                    #tvertex = V3(*model.tvertices[facepart[1]-1])
-                    vertex_buffer_object.append(tvertex)
+                  for faceindex in range(0,3):
+                      facepart = face[faceindex]
+                      nvertex = V3(*model.normals[facepart[2]-1])
+                      vertex_buffer_object.append(nvertex)
 
-                for faceindex in range(0,3):
-                    facepart = face[faceindex]
-                    nvertex = V3(*model.normals[facepart[2]-1])
-                    vertex_buffer_object.append(nvertex)
+              #segundo triangulo que forma el cuadrado
+              #continue
+              for faceindex in [3,0,2]:
+                  facepart = face[faceindex]
+                  vertex = self.transform(V3(*model.vertices[facepart[0]-1]))
+                  vertex_buffer_object.append(vertex)
 
-            #segundo triangulo que forma el cuadrado
-            #continue
-            for faceindex in [3,0,2]:
-                facepart = face[faceindex]
-                vertex = self.transform(V3(*model.vertices[facepart[0]-1]))
-                vertex_buffer_object.append(vertex)
+              if self.active_texture:
+                  for faceindex in [3,0,2]:
+                      facepart = face[faceindex]
+                      tvertex = V2(*model.tvertices[facepart[1]-1])
+                      #tvertex = V3(*model.tvertices[facepart[1]-1])
+                      vertex_buffer_object.append(tvertex)
 
-            if self.active_texture:
-                for faceindex in [3,0,2]:
-                    facepart = face[faceindex]
-                    tvertex = V2(*model.tvertices[facepart[1]-1])
-                    #tvertex = V3(*model.tvertices[facepart[1]-1])
-                    vertex_buffer_object.append(tvertex)
-
-                for faceindex in [3,0,2]:
-                    facepart = face[faceindex]
-                    nvertex = V3(*model.normals[facepart[2]-1])
-                    vertex_buffer_object.append(nvertex)
-
+                  for faceindex in [3,0,2]:
+                      facepart = face[faceindex]
+                      nvertex = V3(*model.normals[facepart[2]-1])
+                      vertex_buffer_object.append(nvertex)
+            except:
+              pass  
     self.active_vertex_array = iter(vertex_buffer_object)
 
   def loadModelMatrix(self, translate=(0, 0, 0), scale=(1, 1, 1), rotate=(0, 0, 0)):

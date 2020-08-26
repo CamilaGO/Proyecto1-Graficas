@@ -78,35 +78,46 @@ def fragment(render, **kwargs):
 
 
 
-r = Render(1000, 1000)
-r.light = V3(0, 0, 1)
+r = Render(1400, 980)
+r.light = V3(0, 1, 1)
 
 #Backgroun
-#t = Texture('./back.bmp')
-#r.buffer = t.pixels
-#r.active_texture = t
-#r.active_shader = gourad
-#r.lookAt(V3(1, 0, 100), V3(0, 0, 0), V3(0, 1, 0))
+t = Texture('./texts/mybg.bmp')
+r.buffer = t.pixels
+r.active_texture = t
+r.active_shader = gourad
+r.lookAt(V3(1, 0, 100), V3(0, 0, 0), V3(0, 1, 0))
 #r.load('./sphere.obj', translate=(0, 0, 0), scale=(1, 1, 1), rotate=(0, 0, 1))
 #r.draw_arrays('TRIANGLES')
-#r.finish('out2.bmp')
+r.finish('out3.bmp')
 
 #item 1
 #arbol
-"""t = Texture('./cafe.bmp')
+t = Texture('./texts/cafe.bmp')
 r.active_texture = t
 r.active_shader = gourad
 r.lookAt(V3(1, 0, 5), V3(0, 0, 0), V3(0, 1, 0))
-r.load1('./tree.obj', translate=(0, -1, 0), scale=(0.05,0.05,0.05), rotate=(0, 0, 0))
+r.load1('./models/tree.obj', translate=(-0.5, -0.5, 0), scale=(0.03,0.03,0.03), rotate=(0, 0, 0))
 r.draw_arrays('TRIANGLES')
-r.finish('mi_arbol.bmp')"""
+r.finish('out3.bmp')
 
-#item 1
-#arbol
-t = Texture('./texts/snake_skin.bmp')
+#item 2
+#cactus
+t = Texture('./texts/cactus.bmp')
 r.active_texture = t
 r.active_shader = gourad
 r.lookAt(V3(1, 0, 5), V3(0, 0, 0), V3(0, 1, 0))
-r.load1('./models/sphere.obj', translate=(0, 0, 0), scale=(1,1,1), rotate=(0, 0, 0))
+#r.load1('./models/cactus1.obj', translate=(-0.8, -0.98, 0), scale=(0.1,0.15,0.15), rotate=(0.2, 1.25, -0.1))
+r.load1('./models/cactus1.obj', translate=(-0.8, -0.98, 0), scale=(0.1,0.15,0.15), rotate=(-0.02, -1.6, -0.1))
 r.draw_arrays('TRIANGLES')
-r.finish('out2.bmp')
+r.finish('out3.bmp')
+
+#item 3
+#fox
+'''t = Texture('./texts/ft.bmp')
+r.active_texture = t
+r.active_shader = gourad
+r.lookAt(V3(1, 0, 5), V3(0, 0, 0), V3(0, 1, 0))
+r.load1('./models/fox.obj', translate=(-0.4, -0.9, 0), scale=(0.007,0.007,0.007), rotate=(0, 0, 0))
+r.draw_arrays('TRIANGLES')
+r.finish('mi_fox.bmp')'''
