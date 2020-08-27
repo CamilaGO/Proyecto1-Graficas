@@ -37,6 +37,69 @@ def gourad(render, **kwargs):
       int(b)
     )
 
+def flat(render, **kwargs):
+  # barycentric
+  w, v, u = kwargs['bar']
+  # texture
+  tx, ty = kwargs['texture_coords']
+  print('mi tx y ty', tx, ty)
+  tcolor = render.active_texture.get_color(tx, ty)
+  # normals
+  nA, nB, nC = kwargs['varying_normals']
+
+  # light intensity
+  iA, iB, iC = [ dot(n, render.light) for n in (nA, nB, nC) ]
+  #intensity = w*iA + u*iB + v*iC
+  intensity = 1
+  r, g, b = tcolor[2] * intensity, tcolor[1] * intensity, tcolor[0] * intensity
+  if r < 0:
+    r = 0
+  if r > 256:
+    r = 255
+
+  if b < 0:
+    b = 0
+  if b > 256:
+    b = 255
+
+  if g < 0:
+    g = 0
+  if g > 256:
+    g = 255
+
+  return color(
+      int(r),
+      int(g),
+      int(b)
+    )
+
+def myshader(render, **kwargs):
+  # barycentric
+  w, v, u = kwargs['bar']
+  # texture
+  tx, ty = kwargs['texture_coords']
+  print('mi tx y ty', tx, ty)
+  tcolor = render.active_texture.get_color(tx, ty)
+  # normals
+  nA, nB, nC = kwargs['varying_normals']
+
+  # light intensity
+  iA, iB, iC = [ dot(n, render.light) for n in (nA, nB, nC) ]
+  intensity = w*iA + u*iB + v*iC
+  #intensity = 0.5
+  if intensity <= 0:
+    r,g,b = 250, 168, 42
+  elif intensity <= 0.5:
+    r,g,b = 237, 182, 71
+  else:
+    r,g,b = 242, 208, 102
+
+  return color(
+      int(r),
+      int(g),
+      int(b)
+    )
+
 
 import random
 
@@ -70,11 +133,11 @@ def fragment(render, **kwargs):
   else:
     intensity = 0
 
-    return color(
-        int(tcolor[2] * intensity) if tcolor[0] * intensity > 0 else 0,
-        int(tcolor[1] * intensity) if tcolor[1] * intensity > 0 else 0,
-        int(tcolor[0] * intensity) if tcolor[2] * intensity > 0 else 0
-      )
+  return color(
+      int(tcolor[2] * intensity) if tcolor[2] * intensity > 0 else 0,
+      int(tcolor[1] * intensity) if tcolor[1] * intensity > 0 else 0,
+      int(tcolor[0] * intensity) if tcolor[1] * intensity > 0 else 0
+    )
 
 
 
@@ -87,11 +150,19 @@ r.buffer = t.pixels
 r.active_texture = t
 r.active_shader = gourad
 r.lookAt(V3(1, 0, 100), V3(0, 0, 0), V3(0, 1, 0))
-#r.load('./sphere.obj', translate=(0, 0, 0), scale=(1, 1, 1), rotate=(0, 0, 1))
-#r.draw_arrays('TRIANGLES')
 r.finish('out4.bmp')
 
 #item 1
+#sol
+t = Texture('./texts/sunt.bmp')
+r.active_texture = t
+r.active_shader = myshader
+r.lookAt(V3(1, 0, 5), V3(0, 0, 0), V3(0, 1, 0))
+r.load1('./models/sphere.obj', translate=(-0.8, 0.6, 0), scale=(0.35,0.5,0.5), rotate=(0, 0, 0))
+r.draw_arrays('TRIANGLES')
+r.finish('out4.bmp')
+
+#item 2
 #arbol
 t = Texture('./texts/cafe.bmp')
 r.active_texture = t
@@ -99,25 +170,44 @@ r.active_shader = gourad
 r.lookAt(V3(1, 0, 5), V3(0, 0, 0), V3(0, 1, 0))
 r.load1('./models/tree.obj', translate=(-0.5, -0.5, 0), scale=(0.03,0.03,0.03), rotate=(0, 0, 0))
 r.draw_arrays('TRIANGLES')
-r.finish('out3.bmp')
+r.finish('out4.bmp')
 
-#item 2
+#item 3
 #cactus
 t = Texture('./texts/cactus.bmp')
 r.active_texture = t
-r.active_shader = gourad
+r.active_shader = flat
 r.lookAt(V3(1, 0, 5), V3(0, 0, 0), V3(0, 1, 0))
 #r.load1('./models/cactus1.obj', translate=(-0.8, -0.98, 0), scale=(0.1,0.15,0.15), rotate=(0.2, 1.25, -0.1))
 r.load1('./models/cactus1.obj', translate=(-0.8, -0.98, 0), scale=(0.1,0.15,0.15), rotate=(-0.02, -1.6, -0.1))
 r.draw_arrays('TRIANGLES')
-r.finish('out3.bmp')
+r.finish('out4.bmp')
 
-#item 3
+#item 4
 #fox
 t = Texture('./texts/ft.bmp')
 r.active_texture = t
 #r.active_shader = gourad
 r.lookAt(V3(1, 0, 5), V3(0, 0, 0), V3(0, 1, 0))
 r.load1('./models/fox.obj', translate=(-0.1, -0.9, 0), scale=(0.005,0.005,0.005), rotate=(0, 0, 0))
+r.draw_arrays('TRIANGLES')
+r.finish('out4.bmp')
+
+
+#item 5
+#ave 1
+t = Texture('./texts/cafe.bmp')
+r.active_texture = t
+r.active_shader = gourad
+r.lookAt(V3(1, 0, 5), V3(0, 0, 0), V3(0, 1, 0))
+r.load1('./models/raven.obj', translate=(0, 0, 0), scale=(0.2,0.2,0.2), rotate=(0, -1, 0))
+r.draw_arrays('TRIANGLES')
+r.finish('out4.bmp')
+#ave 2
+t = Texture('./texts/negro.bmp')
+r.active_texture = t
+r.active_shader = gourad
+r.lookAt(V3(1, 0, 5), V3(0, 0, 0), V3(0, 1, 0))
+r.load1('./models/raven.obj', translate=(-0.5, 0.5, 0), scale=(0.2,0.2,0.2), rotate=(0.5, -1, 0))
 r.draw_arrays('TRIANGLES')
 r.finish('out4.bmp')
