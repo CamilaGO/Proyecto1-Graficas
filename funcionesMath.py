@@ -1,9 +1,10 @@
 from collections import namedtuple
 import struct
 import numpy
-""" implementacion de "vectores" para manejar menos variables en funciones y tener mejor orden de coordenadas
-V2 = namedtuple('Point2', ['x', 'y'])
-V3 = namedtuple('Point3', ['x', 'y', 'z'])"""
+
+# ===============================================================
+# Paula Camila Gonzalez Ortega - 18398
+# ===============================================================
 
 class V3(object):
   def __init__(self, x, y = None, z = None):
@@ -94,12 +95,14 @@ def barycentric(A, B, C, P):
   return w, v, u
 
 def MultMatriz(a,b):
+  #es funcion permite multiplicar matrices sin uso de libreria
   c = []
   for i in range(0,len(a)):
     temp=[]
     for j in range(0,len(b[0])):
       s = 0
       for k in range(0,len(a[0])):
+        #multiplicacion de item por item entre la fila y columna de las matrices
         s += a[i][k]*b[k][j]
       temp.append(s)
     c.append(temp)

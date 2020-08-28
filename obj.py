@@ -1,6 +1,9 @@
 import struct
 import numpy
 
+# ===============================================================
+# Paula Camila Gonzalez Ortega - 18398
+# ===============================================================
 
 def color(r, g, b):
   return bytes([b, g, r])
@@ -42,9 +45,7 @@ class Obj(object):
                 elif prefix == 'vn': #normales
                     self.normals.append(list(map(float,value.split(' '))))
                 elif prefix == 'f':
-                    self.faces.append([list(map(try_int, face.split('/'))) for face in value.split(' ')])
-                    #self.faces.append([list(map(int , face.split('/'))) for face in value.split(' ')])
-            print(line)            
+                    self.faces.append([list(map(try_int, face.split('/'))) for face in value.split(' ')])         
 import mmap
 
 class Texture(object):
@@ -54,13 +55,13 @@ class Texture(object):
 
     def read(self):
         image = open(self.path, "rb")
-        # we ignore all the header stuff
-        image.seek(2 + 4 + 4)  # skip BM, skip bmp size, skip zeros
-        header_size = struct.unpack("=l", image.read(4))[0]  # read header size
+        # se ignora el header
+        image.seek(2 + 4 + 4)  
+        header_size = struct.unpack("=l", image.read(4))[0]  # tamano de header
         image.seek(2 + 4 + 4 + 4 + 4)
         
-        self.width = struct.unpack("=l", image.read(4))[0]  # read width
-        self.height = struct.unpack("=l", image.read(4))[0]  # read width
+        self.width = struct.unpack("=l", image.read(4))[0]  # se lee el ancho
+        self.height = struct.unpack("=l", image.read(4))[0]  # se lee altura
         self.pixels = []
         image.seek(header_size)
         for y in range(self.height):
@@ -75,9 +76,7 @@ class Texture(object):
     def get_color(self, tx, ty, intensity=1):
         x = int(tx * self.width)
         y = int(ty * self.height)
-        print('mi X y Y', x, y)
-        # return self.pixels[y][x]
         try:
             return bytes(map(lambda b: round(b*intensity) if b*intensity > 0 else 0, self.pixels[y][x]))
         except:
-            pass  # what causes this
+            pass 
